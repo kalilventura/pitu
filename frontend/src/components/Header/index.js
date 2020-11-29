@@ -1,6 +1,6 @@
 import React from 'react';
 import { HeaderContainer, Logo } from './styles';
-import Icone from "../../assets/icone.png";
+import Icone from "../../assets/logo.png";
 
 const Header = (props) => {
     return (
