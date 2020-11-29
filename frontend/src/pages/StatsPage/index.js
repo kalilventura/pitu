@@ -5,6 +5,7 @@ import ShortenerService from '../../services/shortenerService';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { parseISO, formatRelative } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
+import vars from '../../configs/vars';
 
 import { StatsBox, StatsBoxTitle, StatsContainer, StatsRow } from './styles';
 
@@ -20,23 +21,28 @@ export default class StatsPage extends React.Component {
     }
 
     async componentDidMount() {
-        const { code } = this.props.math.params;
+        const { code } = this.props.match.params;
         try {
             const service = new ShortenerService();
             const shortenedURL = await service.getStats(code);
 
             const parsedDate = parseISO(shortenedURL.updatedAt);
             const currentDate = new Date();
-
             const relativeDate = formatRelative(parsedDate, currentDate, {
                 locale: ptBR
             });
 
             shortenedURL.relativeDate = relativeDate;
 
-            this.setState({ isLoading: false, shortenedURL });
+            this.setState({
+                isLoading: false,
+                shortenedURL
+            });
         } catch (error) {
-            this.setState({ isLoading: false, errorMessage: 'A URL solicitada não existe.' });
+            this.setState({
+                isLoading: false,
+                errorMessage: `Ops... a URL informada não existe !`
+            });
         }
     }
 
@@ -53,7 +59,7 @@ export default class StatsPage extends React.Component {
                     </StatsContainer>
                 ) : (
                         <StatsContainer className="text-center">
-                            <p><b>https://pitu.tk/{shortenedURL.code}</b></p>
+                            <p><b>{vars.HOST_APP + shortenedURL.code}</b></p>
                             <p>Redireciona para: <br />{shortenedURL.url}</p>
                             <StatsRow>
                                 <StatsBox>
