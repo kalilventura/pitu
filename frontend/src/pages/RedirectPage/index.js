@@ -1,55 +1,87 @@
 import React from 'react';
 import Header from '../../components/Header';
 import { Container } from 'react-bootstrap';
+import ShortenerService from '../../services/shortenerService';
+import { parseISO, formatRelative } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import ShortenerSevice from '../../services/shortenerService';
-import { StatsContainer } from './styles';
+import { StatsContainer, StatsBoxTitle, StatsRow, StatsBox } from './styles';
+import vars from '../../configs/vars';
 
-export default class RedirectPage extends React.Component {
+export default class StatsPage extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
             isLoading: false,
-            url: '',
-            errorMessage: '',
-        }
+            shortenedURL: {},
+            errorMessage: ""
+        };
+
     }
 
     async componentDidMount() {
         const { code } = this.props.match.params;
-
         try {
-            const service = new ShortenerSevice();
-            const { url } = await service.getLink(code);
+            const service = new ShortenerService();
+            const shortenedURL = await service.getStats(code);
 
-            window.location = url;
+            const parsedDate = parseISO(shortenedURL.updatedAt);
+            const currentDate = new Date();
+            const relativeDate = formatRelative(parsedDate, currentDate, {
+                locale: ptBR
+            });
 
+            shortenedURL.relativeDate = relativeDate;
+
+            this.setState({
+                isLoading: false,
+                shortenedURL
+            });
         } catch (error) {
-            this.setState({ isLoading: false, erorMessage: 'Ops, a url solicitada não existe.' });
+            this.setState({
+                isLoading: false,
+                errorMessage: `Ops... a URL informada não existe !`
+            });
         }
     }
 
     render() {
-        const { errorMessage } = this.state;
+        const { errorMessage, shortenedURL } = this.state;
         return (
             <Container>
-                {errorMessage ? (
-                    <>
-                        <Header>
-                            Seu novo Encurtador de urls. :)
-                        </Header>
-                        <StatsContainer className="text-center">
-                            <FontAwesomeIcon size="3x" color="#f8d7da" icon="faExclamationTriangle" />
-                            <p className="m-3">{errorMessage}</p>
-                            <a className="btn btn-primary" href="/">Encurtar nova URL</a>
-                        </StatsContainer>
-                    </>
-                ) : (
-                        <p className="text-center">Redirecionando</p>
-                    )
-                }
+                <Header>Estatísticas de URL encurtada</Header>
+                <StatsContainer className="text-center">
+                    {
+                        errorMessage ? (
+                            <>
+                                <FontAwesomeIcon size="3x" color="#f8d7da" icon="exclamation-triangle" />
+                                <p className="mt-2 mp-2">{errorMessage}</p>
+                                <a href="/" className="btn btn-primary">Encurtar outra URL</a>
+                            </>
+                        ) : (
+                                <>
+                                    <p>Confira abaixo as estatísticas de acesso de sua URL.</p><br />
+                                    <h4>{vars.HOST_APP + shortenedURL.code}</h4>
+                                    <p>Redirecionando para : <b>{shortenedURL.url}</b></p>
+                                    <StatsRow>
+                                        <StatsBox className="col-12 col-lg-6">
+                                            <b>{shortenedURL.hits}</b>
+                                            <StatsBoxTitle>visitas</StatsBoxTitle>
+                                        </StatsBox>
+                                        <StatsBox className="col-12 col-lg-6">
+                                            <b>{shortenedURL.relativeDate}</b>
+                                            <StatsBoxTitle>último acesso</StatsBoxTitle>
+                                        </StatsBox>
+                                    </StatsRow>
+                                    <hr />
+                                    <a href="/" className="btn btn-primary">Encurtar outra URL</a>
+                                    <br /><br />
+                                </>
+                            )
+                    }
+                </StatsContainer>
             </Container>
-        )
+        );
     }
 }
