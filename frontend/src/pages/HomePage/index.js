@@ -74,7 +74,7 @@ export default class HomePage extends React.Component {
                                                 <Button variant="outline-second" onClick={() => this.copyToClipboard()}>Copiar</Button>
                                             </InputGroup.Append>
                                         </InputGroup>
-                                        <p>Para acompanhas as estatisticas, acesse {vars.HOST_APP + code}</p>
+                                        <p>Para acompanhas as estatisticas, acesse {vars.HOST_APP + code}/stats</p>
                                     </>
                                 )
                             )}
